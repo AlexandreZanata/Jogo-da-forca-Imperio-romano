@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Forca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+            background: 
+                linear-gradient(45deg, transparent 75%, #ffffff 75%) -10px 0/ 20px 20px,
+                linear-gradient(135deg, transparent 75%, #dddddd 75%) -10px 0/ 20px 20px;
+            background-color: #ffffff; /* Cor de fundo base */
+            font-weight: bold;
+        }
+        .color-transition {
+            font-size: 55px;
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(270deg, #ff0000, #00ff4c, #0000ff, #eeff00, #9900ff, #2600ff);
+            background-size: 1200% 1200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: colorChange 25s ease infinite;
+            font-family: 'Press Start 2P', cursive;
+            
+        }
+
+        @keyframes colorChange {
+            0% {
+                background-position: 0% 25%;
+            }
+            25%{
+                background-position:0% 25%;
+            }
+            50% {
+                background-position: 25% 50%;
+            }
+            100% {
+                background-position: 0% 100%;
+            }
+        }
+
+
+        .forca-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .forca {
+            margin-right: 40px;
+        }
+
+        .letras-erradas-container {
+            text-align: left;
+            font: normal 20pt Arial;
+            margin-top: -12%;
+            font-weight: bold;
+            margin-left: -3%;
+            color: #ff0000;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .input-container {
+            margin-top: 20px;
+        }
+
+        #palavra {
+            display: flex;
+            justify-content: center;
+            font-size: 40px;
+            letter-spacing: 25px;
+        }
+
+        .letter {
+            border-bottom: 2px solid #000;
+            display: inline-block;
+            width: 30px;
+            text-align: center;
+            padding: 0px 10px;
+            font-size: 40px;
+            margin: 0px 5px;
+            margin-top: -1%;
+        }
+
+        #notification {
+            color: red;
+            font-weight: bold;
+        }
+
+        #gameOver {
+            color: red;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .vidas {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .vidas span {
+            font-size: 35px;
+            margin: 0 5px;
+        }
+        #submitLetter {
+            background-color: green;
+            font: normal 16pt Arial;
+            margin-left: 20px;
+            width: 100px;
+            text-align: center;
+            margin-left: 1.5%;
+            border: 3px solid black;
+        }
+        #resetGame {
+            background-color: red;
+            font: normal 16pt Arial;
+            width: 100px;
+            text-align: center;
+            margin-left: 0%;
+            border: 3px solid black;
+        }
+        #letterInput {
+            width: 60px;
+            font: normal 16pt Arial;
+            margin-left: 10px;
+            margin-right: -20px;
+            text-align: center;
+            margin-left: -1%;
+            border: 3px solid black;
+        }
+        .black {
+            font-weight: bold;
+            font: normal 22pt Arial;
+            margin-top: -0.3%;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="t color-transition">Jogo da Forca</h1>
+    <div class="forca-container">
+        <svg height="250" width="200" class="forca">
+            <line x1="60" y1="20" x2="140" y2="20" stroke="#000" stroke-width="4"/>
+            <line x1="140" y1="20" x2="140" y2="50" stroke="#000" stroke-width="4"/>
+            <line x1="60" y1="20" x2="60" y2="230" stroke="#000" stroke-width="4"/>
+            <line x1="5" y1="230" x2="200" y2="230" stroke="#000" stroke-width="4"/>
+            
+            <!-- Cabeça -->
+            <circle cx="140" cy="70" r="20" class="bodyPart hidden" stroke="#000" stroke-width="4" fill="transparent"/>
+            <!-- Corpo -->
+            <line x1="140" y1="90" x2="140" y2="150" class="bodyPart hidden" stroke="#000" stroke-width="4"/>
+            <!-- Braço esquerdo -->
+            <line x1="140" y1="120" x2="110" y2="100" class="bodyPart hidden" stroke="#000" stroke-width="4"/>
+            <!-- Braço direito -->
+            <line x1="140" y1="120" x2="170" y2="100" class="bodyPart hidden" stroke="#000" stroke-width="4"/>
+            <!-- Perna esquerda -->
+            <line x1="140" y1="150" x2="110" y2="180" class="bodyPart hidden" stroke="#000" stroke-width="4"/>
+            <!-- Perna direita -->
+            <line x1="140" y1="150" x2="170" y2="180" class="bodyPart hidden" stroke="#000" stroke-width="4"/>
+        </svg>
+        
+        <div class="letras-erradas-container">
+            <p>Letras Erradas:</p>
+            <span id="wrongLetters"></span>
+        </div>
+    </div>
+
+    <div class="palavra-container">
+        <p class="black">Dica: <span id="dica"></span></p>
+        <div id="palavra"></div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="letterInput" maxlength="1" placeholder="Letra">
+        <button id="submitLetter">Enviar</button>
+        <button id="resetGame">Reiniciar</button>
+    </div>
+
+    <p id="notification" class="hidden">Você já usou essa letra!</p>
+    <p id="gameOver" class="hidden">GAME OVER! A palavra era <span id="finalWord"></span>.</p>
+
+    <div class="vidas">
+        <span class="vida">❤️</span>
+        <span class="vida">❤️</span>
+        <span class="vida">❤️</span>
+        <span class="vida">❤️</span>
+        <span class="vida">❤️</span>
+        <span class="vida">❤️</span>
+    </div>
+
+    <script>
+        const words = [
+    { word: 'CESAR', hint: 'Líder e general romano famoso' },
+    { word: 'COLISEU', hint: 'Grande arena onde ocorriam lutas de gladiadores' },
+    { word: 'SENADO', hint: 'Conselho de anciãos que ajudava a governar Roma' },
+    { word: 'LEGIONARIO', hint: 'Soldado do exército romano' },
+    { word: 'VIA', hint: 'Estradas construídas pelos romanos' },
+    { word: 'AQUEDUTO', hint: 'Estruturas que levavam água para a cidade' },
+    { word: 'PATRICIO', hint: 'Membro da classe rica e nobre de Roma' },
+    { word: 'PLEBEU', hint: 'Cidadão comum de Roma' },
+    { word: 'IMPERIO', hint: 'Período de expansão e domínio romano' },
+    { word: 'PANTHEON', hint: 'Templo dedicado a todos os deuses romanos' },
+    { word: 'ROMULO', hint: 'Um dos fundadores de Roma' }
+];
+
+        let wordIndex = 0;
+        let correctLetters = [];
+        let wrongLetters = [];
+        let lives = 6;
+
+        const palavraEl = document.getElementById('palavra');
+        const wrongLettersEl = document.getElementById('wrongLetters');
+        const notificationEl = document.getElementById('notification');
+        const gameOverEl = document.getElementById('gameOver');
+        const finalWordEl = document.getElementById('finalWord');
+        const letterInput = document.getElementById('letterInput');
+        const dicaEl = document.getElementById('dica');
+        const vidasEl = document.querySelector('.vidas');
+
+        function displayWord() {
+            const selectedWordObj = words[wordIndex];
+            palavraEl.innerHTML = `
+                ${selectedWordObj.word.split('').map(letter => `
+                    <span class="letter">
+                        ${correctLetters.includes(letter) ? letter : '_'}
+                    </span>
+                `).join('')}
+            `;
+
+            dicaEl.innerText = selectedWordObj.hint;
+
+            const innerWord = palavraEl.innerText.replace(/\n/g, '');
+            if (innerWord === selectedWordObj.word) {
+                gameOverEl.innerText = 'Parabéns! Você acertou!';
+                gameOverEl.classList.remove('hidden');
+                setTimeout(() => {
+                    correctLetters = [];
+                    wrongLetters = [];
+                    wordIndex = (wordIndex + 1) % words.length;
+                    displayWord();
+                    updateWrongLettersEl();
+                    gameOverEl.classList.add('hidden');
+                }, 2000);
+            }
+        }
+
+        function updateWrongLettersEl() {
+            wrongLettersEl.innerHTML = `
+                ${wrongLetters.map(letter => `<span>${letter}</span>`).join(', ')}
+            `;
+
+            const parts = document.querySelectorAll('.bodyPart');
+            parts.forEach((part, index) => {
+                const errors = wrongLetters.length;
+                if (index < errors) {
+                    part.classList.remove('hidden');
+                } else {
+                    part.classList.add('hidden');
+                }
+            });
+
+            if (wrongLetters.length === lives) {
+                finalWordEl.innerText = words[wordIndex].word;
+                gameOverEl.classList.remove('hidden');
+                gameOverEl.innerText = `Game Over! A palavra era ${words[wordIndex].word}.`;
+            }
+
+            updateLives();
+        }
+
+        function updateLives() {
+            const vidas = document.querySelectorAll('.vida');
+            vidas.forEach((vida, index) => {
+                if (index < lives - wrongLetters.length) {
+                    vida.classList.remove('hidden');
+                } else {
+                    vida.classList.add('hidden');
+                }
+            });
+        }
+
+        function showNotification() {
+            notificationEl.classList.remove('hidden');
+            setTimeout(() => {
+                notificationEl.classList.add('hidden');
+            }, 2000);
+        }
+
+        document.getElementById('submitLetter').addEventListener('click', () => {
+            const letter = letterInput.value.toUpperCase();
+            if (letter) {
+                const selectedWordObj = words[wordIndex];
+                if (selectedWordObj.word.includes(letter)) {
+                    if (!correctLetters.includes(letter)) {
+                        correctLetters.push(letter);
+                        displayWord();
+                    } else {
+                        showNotification();
+                    }
+                } else {
+                    if (!wrongLetters.includes(letter)) {
+                        wrongLetters.push(letter);
+                        updateWrongLettersEl();
+                    } else {
+                        showNotification();
+                    }
+                }
+            }
+            letterInput.value = '';
+        });
+
+        document.getElementById('resetGame').addEventListener('click', () => {
+            correctLetters = [];
+            wrongLetters = [];
+            wordIndex = 0;
+            displayWord();
+            updateWrongLettersEl();
+            dicaEl.innerText = words[wordIndex].hint;
+            gameOverEl.classList.add('hidden');
+        });
+
+        function startGame() {
+            displayWord();
+            dicaEl.innerText = words[wordIndex].hint;
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
